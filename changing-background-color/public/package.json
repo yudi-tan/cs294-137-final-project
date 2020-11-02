@@ -1,0 +1,17 @@
+{
+  "name": "hyperspectral",
+  "version": "1.0.0",
+  "description": "A Hyperspectral example",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "J.D. Zamfirescu <zamfire@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "mime": "^2.4.0",
+    "serialport": "^7.1.4",
+    "websocket": "^1.0.28"
+  }
+}
