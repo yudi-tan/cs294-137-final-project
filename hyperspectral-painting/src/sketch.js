@@ -3,8 +3,10 @@
 var socket;
 
 // global variables tracking the color values.
-let ir = 1024, ig = 127, igp = 768, ib = 1024;
+let ir = 246, ig = 255, igp = 0, ib = 68;
 
+// internal mapping to overwrite default p5.js APIs.
+// key = p5.js original API name (e.g. "fill", "stroke" etc), value = custom functions.
 let d = {};
 
 /************************
@@ -35,64 +37,55 @@ function setup() {
   createCanvas(window.innerWidth, window.innerHeight+100);
 
   fillD();
-
-  print("done with setup!");
 }
 
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
-  singleGiantCircle();
+  paintbrushStroke();
 }
-
-// p5.js will call this everytime a touch is registered
-function touchStarted() {
-  window.location = window.location;
-}
-
-// p5.js will call this everytime mouse is moved and a mouse button is NOT pressed
-function mouseMoved() {
-  let v = round((1 - mouseY / height) * 1024);
-  if (mouseX < width/4) {
-    ir = v;
-  } else if (mouseX < width/2) {
-    ig = v;
-  } else if (mouseX < width/1.33) {
-    igp = v;
-  } else {
-    ib = v;
-  }
-  socket.send([ir,ig,igp,ib].join(","));
-}
-
-// p5.js will call this everytime mouse is moved and a mouse button IS pressed
-var mouseDragged = mouseMoved;
-
 /************************
  *                      *
  *    custom handlers   *
  *                      *
  ************************/
 
+ // Used to draw paintbrush strokes across the canvas.
+function paintbrushStroke() {
+  colorMode(RGB);
+  if(mouseIsPressed){
+     noStroke();
+     // Change the RGB parameters here using a color picker.
+     d.stroke(ir, ig, igp, ib);
+     strokeWeight(35);
+     d.line(mouseX, mouseY, pmouseX, pmouseY);
+   }
+}
 
+
+// Core function which overwrites and extends default p5.js functions such as
+// fill, stroke, etc.
 function fillD() {
+  // overwrite fill and stroke functions with d.fill and d.stroke such that they take in
+  // RGG'B  and render rgb on left eye and rg'b on right eye.
   ["fill", "stroke"].forEach(fn => {
     d[fn] = (r,g,gp,b) => {
-      let OG_f = window[fn];
-    
       d[`${fn}_left`] = color(r,g,b);
       d[`${fn}_right`] = color(r,gp,b);
     }
   });
+  // overwrite the p5.js APIs for drawing shapes / figures so that they take up
+  // half the width, so the same image is shown on left and right side of canvas.
   // bitfield of indices that need to have "width/2" added
   [["ellipse", 0b1], ["rect", 0b1], ["text", 0b10], ["line", 0b0101]].forEach(([fn, idxs]) => {
     d[fn] = function() {
       let OG_f = window[fn];
-
+      // we fill the left side with the rgb color
       if (d.fill_left) {
         fill(d.fill_left);
       } else {
         noFill();
       }
+      // same for strokes, stroke left side with rgb
       if (d.stroke_left) {
         stroke(d.stroke_left);
       } else {
@@ -100,12 +93,13 @@ function fillD() {
       }
     
       OG_f.apply(window, Array.from(arguments));
-
+      // for right side, we fill with rg'b
       if (d.fill_right) {
         fill(d.fill_right);
       } else {
         noFill();
       }
+      // same for right side, we stroke with rg'b
       if (d.stroke_right) {
         stroke(d.stroke_right);
       } else {
@@ -121,29 +115,6 @@ function fillD() {
   d.height = height;
 }
 
-function singleGiantCircle() {
-  background(40);
-  var bgHues = [color(255, 220, 220), color(235,255,220), color(220,255,235), color(220,220,255)];
-  [0, width/4, width/2, width/1.33].forEach((x, i) => {
-    if (x > 0) {
-      line(x, 0, x, height)
-    }
-    if (mouseIsPressed) {
-      fill(bgHues[i]);
-      rect(x, height-[ir,ig,igp,ib][i]/1024*height, width/4, height);
-    }
-  })
-
-  const offset = width/4;
-  const offset2 = width/18;
-  const w = offset2 * 0.95;
-
-  d.fill(ir/4,ig/4,igp/4,ib/4);
-  d.ellipse(d.width/2, d.height/2, d.width/2);
-  textAlign(CENTER, TOP);
-  d.fill(0,0,0,0);
-  d.text("RGG'B: "+[ir,ig,igp,ib].map(round).join(","), d.width/2, d.height-40);
-}
 
 
 /************************
