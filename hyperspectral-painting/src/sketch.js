@@ -4,6 +4,7 @@ var socket;
 
 // global variables tracking the color values.
 let ir = 246, ig = 255, igp = 0, ib = 68;
+let bg = 40
 
 // internal mapping to overwrite default p5.js APIs.
 // key = p5.js original API name (e.g. "fill", "stroke" etc), value = custom functions.
@@ -37,11 +38,17 @@ function setup() {
   createCanvas(window.innerWidth, window.innerHeight+100);
 
   fillD();
+  background(bg); // change the background color using a color picker.
 }
 
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
-  paintbrushStroke();
+  if (mouseIsPressed) {
+   paintbrushStroke(mouseX, mouseY, pmouseX, pmouseY);
+   // as user draws a stroke, we also send those data over socket so other
+   // clients can draw them simialrly
+   socket.send([mouseX,mouseY,pmouseX,pmouseY].join(","))
+  }
 }
 /************************
  *                      *
@@ -50,15 +57,13 @@ function draw() {
  ************************/
 
  // Used to draw paintbrush strokes across the canvas.
-function paintbrushStroke() {
-  colorMode(RGB);
-  if(mouseIsPressed){
-     noStroke();
-     // Change the RGB parameters here using a color picker.
-     d.stroke(ir, ig, igp, ib);
-     strokeWeight(35);
-     d.line(mouseX, mouseY, pmouseX, pmouseY);
-   }
+function paintbrushStroke(mx, my, px, py) {
+    colorMode(RGB);
+    noStroke();
+    // Change the RGB parameters here using a color picker.
+    d.stroke(ir, ig, igp, ib);
+    strokeWeight(35);
+    d.line(mx, my, px, py);
 }
 
 
@@ -124,5 +129,6 @@ function fillD() {
  ************************/
 
 function handleMessage(msg) {
-  [ir,ig,igp,ib] = msg.split(",").map(s => Number(s.trim())).slice(0, 4);
+  [mx, my, pmx, pmy] = msg.split(",").map(s => Number(s.trim()));
+  paintbrushStroke(mx, my, pmx, pmy);
 }
