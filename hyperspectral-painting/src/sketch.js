@@ -44,6 +44,11 @@ function setup() {
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
   if (mouseIsPressed) {
+    // make sure we dont draw beyond the middle of the screen (where the right
+    // eye's image is shown)
+    if (mouseX > window.innerWidth / 2) {
+      return
+    }
    paintbrushStroke(mouseX, mouseY, pmouseX, pmouseY);
    // as user draws a stroke, we also send those data over socket so other
    // clients can draw them simialrly
@@ -60,7 +65,7 @@ function draw() {
 function paintbrushStroke(mx, my, px, py) {
     colorMode(RGB);
     noStroke();
-    // Change the RGB parameters here using a color picker.
+    // Change the RGG'B parameters here using a color picker.
     d.stroke(ir, ig, igp, ib);
     strokeWeight(35);
     d.line(mx, my, px, py);
