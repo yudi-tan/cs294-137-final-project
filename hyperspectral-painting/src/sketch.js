@@ -52,7 +52,11 @@ function draw() {
    paintbrushStroke(mouseX, mouseY, pmouseX, pmouseY);
    // as user draws a stroke, we also send those data over socket so other
    // clients can draw them simialrly
-   socket.send([mouseX,mouseY,pmouseX,pmouseY].join(","))
+   payload = {
+     type: "draw_stroke",
+     payload: [mouseX,mouseY,pmouseX,pmouseY].join(",")
+   }
+   socket.send(JSON.stringify(payload))
   }
 }
 /************************
@@ -133,7 +137,16 @@ function fillD() {
  *                      *
  ************************/
 
+// Takes a JSON string with 2 keys (type, payload). Will process them
+// differently based on the type.
 function handleMessage(msg) {
-  [mx, my, pmx, pmy] = msg.split(",").map(s => Number(s.trim()));
-  paintbrushStroke(mx, my, pmx, pmy);
+  obj = JSON.parse(msg)
+  switch (obj.type) {
+    case "draw_stroke":
+      [mx, my, pmx, pmy] = obj.payload.split(",").map(s => Number(s.trim()));
+      paintbrushStroke(mx, my, pmx, pmy);
+    // add more cases here for other synchronization needs
+    default:
+      return
+  }
 }
