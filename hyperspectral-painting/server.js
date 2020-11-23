@@ -32,6 +32,8 @@ let server = http.createServer(async (req, res) => {
   case '/color.js': 
   case '/style.css': 
   case '/index.html':
+  case '/colorPicker_yuhan.js':
+  case '/ColorWheel.png':
     // if it's one of these known files above, then...
     
     // remove any path elements that go "up" in the file hierarchy

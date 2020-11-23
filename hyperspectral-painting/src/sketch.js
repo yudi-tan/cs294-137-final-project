@@ -4,17 +4,23 @@ var socket;
 
 // global variables tracking the color values.
 let ir = 246, ig = 255, igp = 0, ib = 68;
-let bg = 40
+let bg = [40,40,40]
 
 // internal mapping to overwrite default p5.js APIs.
 // key = p5.js original API name (e.g. "fill", "stroke" etc), value = custom functions.
 let d = {};
+
+//color picker related
+var colorWheelSize = 130, margin = 20
 
 /************************
  *                      *
  *    p5.js callbacks   *
  *                      *
  ************************/
+ function preload() {
+	colorWheel = loadImage("ColorWheel.png");
+}
 
  // p5.js will first call this function upon starting.
 function setup() {
@@ -35,29 +41,28 @@ function setup() {
   })  
 
   // Initialize the canvas to the size of the screen.
-  createCanvas(window.innerWidth, window.innerHeight+100);
-
+  createCanvas(window.innerWidth, window.innerHeight);
   fillD();
+  initialization()
   background(bg); // change the background color using a color picker.
+  stroke(255)
+  line(d.width,0,d.width,d.height)
+  // set up the color picker
+  colorWheel.resize(colorWheelSize,colorWheelSize)
+  image(colorWheel, margin, margin,colorWheelSize,colorWheelSize)
+  image(colorWheel, d.width+margin, margin,colorWheelSize,colorWheelSize)
+  textSize(20)
+  d.noStroke()
+  d.fill(255,255,255,255,255,255)
+  d.text("using arrow keys to control left/right and brush size, DEL:erase",colorWheelSize+4*margin,margin-5)
+  createResetButton()
+  createLoadButton()
+  
 }
 
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
-  if (mouseIsPressed) {
-    // make sure we dont draw beyond the middle of the screen (where the right
-    // eye's image is shown)
-    if (mouseX > window.innerWidth / 2) {
-      return
-    }
-   paintbrushStroke(mouseX, mouseY, pmouseX, pmouseY);
-   // as user draws a stroke, we also send those data over socket so other
-   // clients can draw them simialrly
-   payload = {
-     type: "draw_stroke",
-     payload: [mouseX,mouseY,pmouseX,pmouseY].join(",")
-   }
-   socket.send(JSON.stringify(payload))
-  }
+  ColorPicker(colorWheel, colorWheelSize, bg, margin, d)
 }
 /************************
  *                      *
@@ -65,15 +70,6 @@ function draw() {
  *                      *
  ************************/
 
- // Used to draw paintbrush strokes across the canvas.
-function paintbrushStroke(mx, my, px, py) {
-    colorMode(RGB);
-    noStroke();
-    // Change the RGG'B parameters here using a color picker.
-    d.stroke(ir, ig, igp, ib);
-    strokeWeight(35);
-    d.line(mx, my, px, py);
-}
 
 
 // Core function which overwrites and extends default p5.js functions such as
@@ -82,11 +78,15 @@ function fillD() {
   // overwrite fill and stroke functions with d.fill and d.stroke such that they take in
   // RGG'B  and render rgb on left eye and rg'b on right eye.
   ["fill", "stroke"].forEach(fn => {
-    d[fn] = (r,g,gp,b) => {
-      d[`${fn}_left`] = color(r,g,b);
-      d[`${fn}_right`] = color(r,gp,b);
+    d[fn] = (r1,g1,b1,r2,g2,b2) => {
+      d[`${fn}_left`] = color(r1,g1,b1);
+      d[`${fn}_right`] = color(r2,g2,b2);
     }
   });
+  d["noStroke"] = ()=>{
+      d["stroke_left"] = 0;
+      d["stroke_right"] = 0;
+  }
   // overwrite the p5.js APIs for drawing shapes / figures so that they take up
   // half the width, so the same image is shown on left and right side of canvas.
   // bitfield of indices that need to have "width/2" added
@@ -137,16 +137,7 @@ function fillD() {
  *                      *
  ************************/
 
-// Takes a JSON string with 2 keys (type, payload). Will process them
-// differently based on the type.
 function handleMessage(msg) {
-  obj = JSON.parse(msg)
-  switch (obj.type) {
-    case "draw_stroke":
-      [mx, my, pmx, pmy] = obj.payload.split(",").map(s => Number(s.trim()));
-      paintbrushStroke(mx, my, pmx, pmy);
-    // add more cases here for other synchronization needs
-    default:
-      return
-  }
+  [mx, my, pmx, pmy] = msg.split(",").map(s => Number(s.trim()));
+  paintbrushStroke(mx, my, pmx, pmy);
 }
