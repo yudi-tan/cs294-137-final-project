@@ -1,3 +1,4 @@
+// this version is an attempt at integration ... DOESN'T WORK :(
 // global variable (initialized in setup) which tracks websocket connection to
 // server. used to broadcast / receive events to and from server.
 var socket;
