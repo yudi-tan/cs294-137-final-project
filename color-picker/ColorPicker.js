@@ -26,19 +26,17 @@ class ColorPicker {
             this.yPos = screenHeight - this.yPos;
         }
 
-        
-        this.hColors = [];
-        this.rColors = [];
-
         this.offset = offset;
 
+        // hColors and rColors are different
+        // rColors is just a list of RGB ([[1, 1, 1], [2, 2, 2], etc])
+        // hColors is defined by pairs of RGB - ([[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]])
         this.hColors = h;
         this.rColors = r;
         this.hColorPositions = [];
         this.rColorPositions = [];
 
-        this.label = label;
-        
+        this.label = label;        
         
     }
 
@@ -59,6 +57,10 @@ class ColorPicker {
         this.offset = newScreenWidth/2;
         this.hColorPositions = [];
         this.rColorPositions = [];
+    }
+
+    updateOffset(new_offset) {
+        this.offset = new_offset;
     }
 
     display() {
@@ -91,8 +93,12 @@ class ColorPicker {
         text(this.label, this.xPos - this.offset, this.yPos + this.width/2 + 10)
 
         // now fill in the ellipse positions with hColor values
+        // specify RGB color space
+        colorMode(RGB, 255);
+
         for (let i = 0; i < this.hColors.length; i++) {
-            fill(this.hColors[i]);
+            // retrieve the appropriate colors:
+            let [hColor1, hColor2] = this.hColors[i];
             // each new circle is placed at an angle of 0 + 180/len(hColors) - 180/len(hColors)/2
             let angle = (180/this.hColors.length)/2 + i*(180/this.hColors.length);
             let angle_rads = angle*(Math.PI/180);
@@ -102,9 +108,12 @@ class ColorPicker {
 
             // each color circle has width of width/4 - margin
             let colorCircleWidth = this.width/4 - 5;
+
+            fill(hColor1);
             ellipse(colorCircleXPos, colorCircleYPos, colorCircleWidth);
 
             // do the same, but with the offset
+            fill(hColor2);
             ellipse(colorCircleXPos - this.offset, colorCircleYPos, colorCircleWidth);
 
             // save the positions to detect clicky click
@@ -115,13 +124,15 @@ class ColorPicker {
         // do the same with rColor values, but the rules are a lil bit different
         // separation like this allows for diff amounts of rColors and hColors
         for (let i = 0; i < this.rColors.length; i++) {
-            fill(this.rColors[i]);
+            
             // each new circle is placed at an angle of 180/len(hColors)*index + 180/len(hColors)/2 (the initial offset) + 180 (reflect)
             let angle = (180/this.rColors.length)/2 + i*(180/this.rColors.length) + 180;
             let angle_rads = angle*(Math.PI/180);
             // precise coordinate is on the circle starting at xPos yPos with radius width*(3/8)
             let colorCircleXPos = this.xPos + this.width*(3/8)*Math.cos(angle_rads);
             let colorCircleYPos = this.yPos - this.width*(3/8)*Math.sin(angle_rads);
+
+            fill(this.rColors[i]);
 
             // each color circle has width of width/4 - margin
             let colorCircleWidth = this.width/4 - 5;
@@ -145,6 +156,7 @@ class ColorPicker {
             let distOffset = dist(mouseX, mouseY, colorToCheck.x - this.offset, colorToCheck.y) 
             if ((distPrimary < this.width/8) || (distOffset < this.width/8)) {
                 return this.hColors[i];
+                // returns a 2d [[left, left, left], [right, right, right]]
             }
         }
 
@@ -154,6 +166,7 @@ class ColorPicker {
             let distOffset = dist(mouseX, mouseY, colorToCheck.x - this.offset, colorToCheck.y) 
             if ((distPrimary < this.width/8) || (distOffset < this.width/8)) {
                 return this.rColors[i];
+                // returns a 1d [r, g, b]
             }
         }
 
