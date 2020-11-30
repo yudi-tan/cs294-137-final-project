@@ -31,7 +31,7 @@ function setup() {
   //   [rn, gn, bn],
   // ]
   let paintHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
-  let paintRColors = [[5, 100, 200], [25, 25, 25]]
+  let paintRColors = [[5, 100, 200], [25, 25, 25], [5, 100, 200], [5, 100, 200]]
   
   let backgroundHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
   let backgroundRColors = [[5, 100, 200], [25, 25, 25]]
