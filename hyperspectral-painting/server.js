@@ -12,6 +12,10 @@ const http = require('http');
  *                *
  ******************/
 
+ // This buffer stores all commands sent over the websocket, so that we can
+ // start new clients off with the latest state of the canvas.
+let command_buffer = [];
+
 // PORT to serve our web server
 const PORT = 8000;
 
@@ -103,7 +107,12 @@ wsServer.on('request', request => {
   
   // add it to the set of all connections
   allConnections.add(connection);
-    
+
+  // send all the commands in the command_buffer to the client
+  for(let c of command_buffer) {
+    connection.send(c);
+  }
+
   // when a message comes in on that connection
   connection.on('message', message => {
     // ignore it if it's not text
@@ -113,6 +122,10 @@ wsServer.on('request', request => {
     
     // get the text out if it is text.
     let messageString = message.utf8Data;
+    
+    // store the command in the command buffer so that new clients can replay
+    // all existing commands. 
+    command_buffer.push(messageString);
     
     // forward the message to other websocket clients
     if (allConnections.size > 1) {
