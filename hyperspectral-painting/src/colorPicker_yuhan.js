@@ -5,7 +5,7 @@ var labelColorLeft=[170,0,0,255], labelColorRight=[170,0,0,255]
 var img
 let LoadButtonLeft
 
-function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp, d_temp){
+function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp, d_temp, socket, mousePressed, mx, my, pmx, pmy){
 	// change the variable to be global
 	colorWheel = colorWheel_temp
 	colorWheelSize = colorWheelSize_temp
@@ -43,8 +43,8 @@ function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp,
 	d.text('brush size:'+ brushSize.toString(), margin+8, margin+colorWheelSize+65)
 	pop()
 
-	if(mouseIsPressed) {
-		let xPos = mouseX % Math.round(d.width), yPos = mouseY
+	if(mousePressed) {
+		let xPos = mx % Math.round(d.width), yPos = my
 		if (Math.pow(xPos-margin-colorWheelSize/2,2)+Math.pow(yPos-margin-colorWheelSize/2,2)<=colorWheelSize*colorWheelSize/4){
 			if(LRFlag==0)
 				brushColorLeft = colorWheel.get(xPos-margin,yPos-margin)
@@ -52,17 +52,23 @@ function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp,
 				brushColorRight = colorWheel.get(xPos-margin,yPos-margin)
 		}
 		if (xPos>4*margin+colorWheelSize && yPos>40){
-			paintbrushStroke(d, mouseX,mouseY,pmouseX,pmouseY,brushColorLeft,brushColorRight)
+			paintbrushStroke(mx,my,pmx,pmy,brushColorLeft,brushColorRight)
 		}	
+		// as user draws a stroke, we also send those data over socket so other
+		// clients can draw them similarly
+		payload = {
+			type: "draw_stroke",
+			payload: [mx, my, pmx, pmy, brushColorLeft, brushColorRight]
+		}
+		socket.send(JSON.stringify(payload));
 	}
 	if (img) {
 		image(img, 200, 200,350*img.width/img.height,350);
 		image(img, 200+d.width, 200,350*img.width/img.height,350);
 	}
-
 }
 
-function paintbrushStroke(d, mx, my, px, py,brushColorLeft,brushColorRight) {
+function paintbrushStroke(mx, my, px, py,brushColorLeft,brushColorRight) {
 	push()
     colorMode(RGB);
     // Change the RGG'B parameters here using a color picker.

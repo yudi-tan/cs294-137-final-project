@@ -62,7 +62,7 @@ function setup() {
 
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
-  ColorPicker(colorWheel, colorWheelSize, bg, margin, d)
+  ColorPicker(colorWheel, colorWheelSize, bg, margin, d, socket, mouseIsPressed, mouseX, mouseY, pmouseX, pmouseY)
 }
 /************************
  *                      *
@@ -137,7 +137,17 @@ function fillD() {
  *                      *
  ************************/
 
+// Takes a JSON string with 2 keys (type, payload). Will process them
+// differently based on the type.
 function handleMessage(msg) {
-  [mx, my, pmx, pmy] = msg.split(",").map(s => Number(s.trim()));
-  paintbrushStroke(mx, my, pmx, pmy);
+  obj = JSON.parse(msg);
+  switch (obj.type) {
+    case "draw_stroke":
+      pl = obj.payload
+      // (d, mouseX, mouseY, pmouseX, pmouseY, brushColorLeft, brushColorRight) = obj.payload;
+      paintbrushStroke(pl[0],pl[1],pl[2],pl[3],pl[4],pl[5]);
+    // add more cases here for other synchronization needs
+    default:
+      return
+  }
 }
