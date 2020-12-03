@@ -101,8 +101,17 @@ function createResetButton(){
 	resetButtonLeft.position(margin+35, margin+colorWheelSize+80);
 	resetButtonRight = createButton('RESET');
 	resetButtonRight.position(margin+35+d.width, margin+colorWheelSize+80);
-	resetButtonLeft.mousePressed(initialization);
-	resetButtonRight.mousePressed(initialization);
+	mousePressedCallback = () => {
+		initialization();
+		// as user resets canvas on one client, we synchronize the other clients
+		// too
+		payload = {
+			type: "reset_canvas",
+		}
+		socket.send(JSON.stringify(payload));
+	}
+	resetButtonLeft.mousePressed(mousePressedCallback);
+	resetButtonRight.mousePressed(mousePressedCallback);
 }
 
 function initialization(){

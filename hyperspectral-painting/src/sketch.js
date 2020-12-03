@@ -144,8 +144,11 @@ function handleMessage(msg) {
   switch (obj.type) {
     case "draw_stroke":
       pl = obj.payload
-      // (d, mouseX, mouseY, pmouseX, pmouseY, brushColorLeft, brushColorRight) = obj.payload;
       paintbrushStroke(pl[0],pl[1],pl[2],pl[3],pl[4],pl[5]);
+      break;
+    case "reset_canvas":
+      initialization();
+      break;
     // add more cases here for other synchronization needs
     default:
       return
