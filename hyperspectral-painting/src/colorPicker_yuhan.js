@@ -29,16 +29,16 @@ function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp,
 	d.noStroke()
 	d.fill(labelColorLeft[0],labelColorLeft[1],labelColorLeft[2],labelColorRight[0],labelColorRight[1],labelColorRight[2])
 	if (LRFlag==0)
-		d.text('left', margin+50, margin+colorWheelSize+40)
+		// d.text('left', margin+50, margin+colorWheelSize+40)
 	if (LRFlag==1)
-		d.text('right', margin+50, margin+colorWheelSize+40)
+		// d.text('right', margin+50, margin+colorWheelSize+40)
 	pop()
 	// brush size 
 	push()
 	textSize(20)
 	d.noStroke()
 	d.fill(labelColorLeft[0],labelColorLeft[1],labelColorLeft[2],labelColorRight[0],labelColorRight[1],labelColorRight[2])
-	d.text('brush size:'+ brushSize.toString(), margin+8, margin+colorWheelSize+65)
+	// d.text('brush size:'+ brushSize.toString(), margin+8, margin+colorWheelSize+65)
 	pop()
 
 	if(mousePressed) {
@@ -132,7 +132,6 @@ function initialization(){
     textSize(20)
     d.noStroke()
     d.fill(255,255,255,255,255,255)
-    d.text("using arrow keys to control left/right and brush size, DEL:erase",colorWheelSize+4*margin,margin-5)
 	img=null
 }
 
