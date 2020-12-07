@@ -20,7 +20,7 @@ let bg_right = [255, 255, 0]
 let d = {};
 
 //color picker related
-var colorWheelSize = 200, margin = 30
+var colorWheelSize = 200, margin = 30, colorWheel;
 
 // for keming's color pickers
 var paintHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
@@ -30,6 +30,7 @@ var backgroundHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40,
 var backgroundRColors = [[5, 100, 200], [25, 25, 25]]
 
 var curr_offset;
+var next_offset;
 
 
 /************************
@@ -76,23 +77,41 @@ function setup() {
   // specify the offset
   curr_offset = width/2;
   
-  slider = createSlider(0, curr_offset+300, curr_offset);
-  slider.position(10, 10);
-  slider.style('width', '80px');
+
 
 }
 
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
-  // to_change_offset = slider.value();
-  // if (to_change_offset !== curr_offset) {
-  //   clear();
-  //   curr_offset = to_change_offset;
-  // }
-  // fillD(to_change_offset);
 
+  if (next_offset !== curr_offset) {
+    // this is called when the window size changes, which then changes the offset.
+
+    // need to remove old elements like the buttons, lines, background area, etc.
+    // otherwise, the new elements just get repeatedly drawn over old ones, and images don't have their resolutions/etc updated.
+    clear();
+
+    //update the drawing functions
+    fillD(next_offset);
+
+    // redraw the relevant elements based on the new fillD function
+    paintDrawingAreas();
+    stroke(255)
+    line(d.width,0,d.width,d.height)
+
+    // reload static assets and redraw colorwheel, since the resolution they are read in depends on canvas size (without this, the images get blurry)
+    colorWheelSize = width/10;
+    margin = 30;
+
+    //colorWheel = loadImage("ColorWheel.png"); <- BIG ISSUE with this; need to reload, or else the repeated colorwheel.resize calls will make 
+    // this blurry, but the loadImage happens too slowly relative to drawing so p5 js gets confused and doesn't show the colorwheel
+    reinitialization();
+    createResetButton();
+    createLoadButton();
+    
+    curr_offset = next_offset;
+  }
   
-
   ColorPicker(colorWheel, colorWheelSize, bg, margin, d, socket, mouseIsPressed, mouseX, mouseY, pmouseX, pmouseY)
   paintColorPicker = new ColorPickerKeming(width, height, curr_offset, paintHColors, paintRColors, "Paint", "lowerleft");
   backgroundColorPicker = new ColorPickerKeming(width, height, curr_offset, backgroundHColors, backgroundRColors, "Background", "lowerright");
@@ -140,15 +159,17 @@ function mousePressed() {
 }
 
 
-// function windowResized() {
-//   resizeCanvas(window.innerWidth, window.innerHeight);
-//   //update the new offset
-//   curr_offset = width/2;
+function windowResized() {
+  // first update canvas to match size of window
+  resizeCanvas(window.innerWidth, window.innerHeight);
+  // update the new offset; the draw() function uses the curr_offset to update the D function and redo drawings automatically
+  next_offset = width/2;
   
-//   // send a message to the web socket indicating that we are resetting the canvas and to redraw components on other clients
-//   // socket.send(JSON.stringify({type:"canvas_resize"}));
+  // send a message to the web socket indicating that we are resetting the canvas and to redraw components on other clients
+  // this part is dubious whether it works...
+  // socket.send(JSON.stringify({type:"canvas_resize"}));
   
-// }
+}
 
 /************************
  *                      *
@@ -235,8 +256,6 @@ function repaintBufferItems() {
     }
   }
 }
-
-
 
 
 /************************
