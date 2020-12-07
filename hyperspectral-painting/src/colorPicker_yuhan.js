@@ -133,6 +133,7 @@ function initialization(){
     d.noStroke()
     d.fill(255,255,255,255,255,255)
 	img=null
+	paintDrawingAreas();
 }
 
 function createLoadButton(){
@@ -151,3 +152,18 @@ function displayImg(file){
 	}
 }
 
+function paintDrawingAreas() {
+	let rect_margin_x = 4 * margin + colorWheelSize + 10;
+	let rect_width_x = window.innerWidth / 2 - rect_margin_x;
+	let rect_margin_y = 40;
+	let rect_height_y = window.innerHeight * 0.70;
+	let c = color(bg_left);
+	fill(c);
+	noStroke();
+	rect(rect_margin_x, rect_margin_y, rect_width_x, rect_height_y);
+  	let rect_margin_x_right = rect_margin_x + window.innerWidth / 2;
+  	c = color(bg_right);
+	fill(c);
+	noStroke();
+	rect(rect_margin_x_right, rect_margin_y, rect_width_x, rect_height_y);
+}

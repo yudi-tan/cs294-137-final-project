@@ -8,12 +8,12 @@ var backgroundColorPicker;
 var brushColorLeft=[170,0,0,255], brushColorRight=[170,0,0,255]
 var labelColorLeft=[170,0,0,255], labelColorRight=[170,0,0,255]
 
-// var offsetSlider1;
 
 // global variables tracking the color values.
 let ir = 246, ig = 255, igp = 0, ib = 68;
 let bg = [40,40,40]
-
+let bg_left = [255, 0, 255]
+let bg_right = [255, 255, 0]
 // internal mapping to overwrite default p5.js APIs.
 // key = p5.js original API name (e.g. "fill", "stroke" etc), value = custom functions.
 let d = {};
@@ -75,8 +75,7 @@ function setup() {
   paintColorPicker = new ColorPickerKeming(width, height, starting_offset, paintHColors, paintRColors, "Paint", "lowerleft", d);
   backgroundColorPicker = new ColorPickerKeming(width, height, starting_offset, backgroundHColors, backgroundRColors, "Background", "lowerright", d);
 
-  // offsetSlider1 = createSlider(0, width, starting_offset);
-  // offsetSlider1.position(20, 20);
+  paintDrawingAreas();
   
 }
 
@@ -84,11 +83,6 @@ function setup() {
 function draw() {
   ColorPicker(colorWheel, colorWheelSize, bg, margin, d, socket, mouseIsPressed, mouseX, mouseY, pmouseX, pmouseY)
   
-  // keming color picker
-  // let offset = offsetSlider1.value();
-
-  // paintColorPicker.updateOffset(offset);
-  // backgroundColorPicker.updateOffset(offset);
 
   paintColorPicker.display();
   backgroundColorPicker.display();
@@ -98,7 +92,6 @@ function mousePressed() {
   pc = paintColorPicker.retColorClicked();
   bc = backgroundColorPicker.retColorClicked();
   if (pc) {
-    // TODO: synchronize this to other clients via ws.
     brushColorLeft = pc[0];
     labelColorLeft = pc[0];
     brushColorRight = pc[1];
@@ -117,10 +110,18 @@ function mousePressed() {
     socket.send(JSON.stringify(payload));
   }
   if (bc) {
-    // currentBackgroundColor = bc;
-     // TODO: synchronize this to other clients via ws.
+    // TODO: synchronize this to other clients via ws.
     // TODO: update the left and right background colors correspondignly
-    console.log("BC: ", bc);
+    bg_left = bc[0];
+    bg_right = bc[1];
+    initialization();
+    // as user changes bg color, we need to synchronize this change to other
+    // clients too.
+		payload = {
+			type: "background_color_change",
+			payload: bc,
+		}
+    socket.send(JSON.stringify(payload));
   }
 }
 
@@ -216,6 +217,11 @@ function handleMessage(msg) {
     case "brush_color_change_right":
       brushColorRight = obj.payload;
       labelColorRight = obj.payload;
+      break;
+    case "background_color_change":
+      bg_left = obj.payload[0];
+      bg_right = obj.payload[1];
+      initialization();
       break;
     // add more cases here for other synchronization needs
     default:
