@@ -37,6 +37,7 @@ let server = http.createServer(async (req, res) => {
   case '/style.css': 
   case '/index.html':
   case '/colorPicker_yuhan.js':
+  case '/colorPicker_keming.js':
   case '/ColorWheel.png':
     // if it's one of these known files above, then...
     

@@ -1,7 +1,5 @@
-var brushColorLeft=[170,0,0,255], brushColorRight=[170,0,0,255]
 var LRFlag=0 //LRFlag=0:left,=1:right
 var brushSize=25
-var labelColorLeft=[170,0,0,255], labelColorRight=[170,0,0,255]
 var img
 let LoadButtonLeft
 
@@ -60,6 +58,16 @@ function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp,
 			type: "draw_stroke",
 			payload: [mx, my, pmx, pmy, brushColorLeft, brushColorRight]
 		}
+		socket.send(JSON.stringify(payload));
+		payload = {
+			type: "brush_color_change_left",
+			payload: brushColorLeft,
+		}
+		socket.send(JSON.stringify(payload));
+		payload = {
+				type: "brush_color_change_right",
+				payload: brushColorRight,
+			}
 		socket.send(JSON.stringify(payload));
 	}
 	if (img) {
