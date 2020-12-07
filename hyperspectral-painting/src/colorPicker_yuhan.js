@@ -2,7 +2,7 @@ var LRFlag=0 //LRFlag=0:left,=1:right
 var brushSize=25
 var imgL, imgR
 var rect_height_y
-let LoadButtonLeft
+var LoadButtonLeft, LoadButtonRight, resetButtonLeft, resetButtonLeft;
 var imgFlag = true
 
 function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp, d_temp, socket, mousePressed, mx, my, pmx, pmy){
@@ -81,7 +81,14 @@ function keyPressed(){
 }
 
 function createResetButton(){
-	let resetButtonLeft = createButton('RESET');
+	if (resetButtonLeft) {
+		// remove the existing buttons if it's already been drawn, to avoid buttons duplicating on UI redraw
+		resetButtonLeft.remove();
+		resetButtonRight.remove();
+	}
+	
+	
+	resetButtonLeft = createButton('RESET');
 	resetButtonLeft.position(d.width/2-colorWheelSize, d.height-margin-colorWheelSize);
 	resetButtonRight = createButton('RESET');
 	resetButtonRight.position(3*d.width/2-colorWheelSize, d.height-margin-colorWheelSize);
@@ -112,7 +119,26 @@ function initialization(){
 	paintDrawingAreas();
 }
 
+function reinitialization() {
+	textSize(20)
+    d.noStroke()
+    d.fill(255,255,255,255,255,255)
+	img=null
+	paintDrawingAreas();
+	colorWheel.resize(colorWheelSize,colorWheelSize)
+    image(colorWheel, d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
+	image(colorWheel, 3*d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
+	console.log('resize')
+}
+
 function createLoadButton(){
+	if (LoadButtonLeft) {
+		// remove the existing buttons if it's already been drawn, to avoid buttons duplicating on UI redraw
+		LoadButtonLeft.remove();
+		LoadButtonRight.remove();
+	}
+	
+
 	LoadButtonLeft = createFileInput(displayImg);
 	LoadButtonLeft.position(d.width/2+0.6*colorWheelSize, d.height-margin-colorWheelSize);
 	LoadButtonRight = createFileInput(displayImg);
@@ -226,4 +252,11 @@ function HSVtoRGGB(h, s, v) {
       Math.round(gp * 255),
       Math.round(b * 255)
     ];
+}
+
+function deleteButtons() {
+	console.log('calling this');
+	
+	resetButtonLeft.remove();
+	resetButtonRight.remove();
 }
