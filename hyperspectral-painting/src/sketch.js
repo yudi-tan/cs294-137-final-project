@@ -20,7 +20,7 @@ let bg_right = [255, 255, 0]
 let d = {};
 
 //color picker related
-var colorWheelSize = 130, margin = 20
+var colorWheelSize = 200, margin = 30
 
 // for keming's color pickers
 var paintHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]

@@ -10,46 +10,16 @@ function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp,
 	bg = bg_temp
 	margin = margin_temp
 	d = d_temp
-	// update the menu on the LEFT
-	push()
-	d.noStroke()
-	d.fill(bg[0],bg[1],bg[2],bg[0],bg[1],bg[2],)
-	d.rect(margin+colorWheelSize,0,3*margin,2*margin+colorWheelSize)
-	d.rect(5, 2*margin+colorWheelSize,4*margin+colorWheelSize,d.height-2*margin-colorWheelSize)
-	pop()
-	// left and right label
-	if(brushColorLeft[0]!=bg[0]||brushColorLeft[1]!=bg[1]||brushColorLeft[2]!=bg[2]){
-		labelColorLeft = brushColorLeft
-	}
-	if(brushColorRight[0]!=bg[0]||brushColorRight[1]!=bg[1]||brushColorRight[2]!=bg[2]){
-		labelColorRight = brushColorRight
-	}
-	push()
-	textSize(20)
-	d.noStroke()
-	d.fill(labelColorLeft[0],labelColorLeft[1],labelColorLeft[2],labelColorRight[0],labelColorRight[1],labelColorRight[2])
-	if (LRFlag==0)
-		// d.text('left', margin+50, margin+colorWheelSize+40)
-	if (LRFlag==1)
-		// d.text('right', margin+50, margin+colorWheelSize+40)
-	pop()
-	// brush size 
-	push()
-	textSize(20)
-	d.noStroke()
-	d.fill(labelColorLeft[0],labelColorLeft[1],labelColorLeft[2],labelColorRight[0],labelColorRight[1],labelColorRight[2])
-	// d.text('brush size:'+ brushSize.toString(), margin+8, margin+colorWheelSize+65)
-	pop()
 
 	if(mousePressed) {
 		let xPos = mx % Math.round(d.width), yPos = my
-		if (Math.pow(xPos-margin-colorWheelSize/2,2)+Math.pow(yPos-margin-colorWheelSize/2,2)<=colorWheelSize*colorWheelSize/4){
+		if (Math.pow(xPos-d.width/2+colorWheelSize/2-colorWheelSize/2,2)+Math.pow(yPos-d.height+colorWheelSize+margin-colorWheelSize/2,2)<=colorWheelSize*colorWheelSize/4){
 			if(LRFlag==0)
-				brushColorLeft = colorWheel.get(xPos-margin,yPos-margin)
+				brushColorLeft = colorWheel.get(xPos-d.width/2+colorWheelSize/2,yPos-d.height+colorWheelSize+margin)
 			if(LRFlag==1)
-				brushColorRight = colorWheel.get(xPos-margin,yPos-margin)
+				brushColorRight = colorWheel.get(xPos-d.width/2+colorWheelSize/2,yPos-d.height+colorWheelSize+margin)
 		}
-		if (xPos>4*margin+colorWheelSize && yPos>40){
+		if (yPos<0.75*innerHeight-brushSize/2){
 			paintbrushStroke(mx,my,pmx,pmy,brushColorLeft,brushColorRight)
 		}	
 		// as user draws a stroke, we also send those data over socket so other
@@ -99,16 +69,16 @@ function keyPressed(){
 		if(brushSize<5) brushSize=5
 	}
 	if (keyCode === DELETE){
-		brushColorLeft=[bg[0],bg[1],bg[2],255]
-		brushColorRight=[bg[0],bg[1],bg[2],255]
+		brushColorLeft=[bg_left[0],bg_left[1],bg_left[2],255]
+		brushColorRight=[bg_right[0],bg_right[1],bg_right[2],255]
 	}
 }
 
 function createResetButton(){
 	let resetButtonLeft = createButton('RESET');
-	resetButtonLeft.position(margin+35, margin+colorWheelSize+80);
+	resetButtonLeft.position(d.width/2-colorWheelSize, d.height-margin-colorWheelSize);
 	resetButtonRight = createButton('RESET');
-	resetButtonRight.position(margin+35+d.width, margin+colorWheelSize+80);
+	resetButtonRight.position(3*d.width/2-colorWheelSize, d.height-margin-colorWheelSize);
 	mousePressedCallback = () => {
 		initialization();
 		// as user resets canvas on one client, we synchronize the other clients
@@ -127,8 +97,8 @@ function initialization(){
 	stroke(255)
 	line(d.width,0,d.width,d.height)
 	colorWheel.resize(colorWheelSize,colorWheelSize)
-    image(colorWheel, margin, margin,colorWheelSize,colorWheelSize)
-    image(colorWheel, d.width+margin, margin,colorWheelSize,colorWheelSize)
+    image(colorWheel, d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
+    image(colorWheel, 3*d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
     textSize(20)
     d.noStroke()
     d.fill(255,255,255,255,255,255)
@@ -138,9 +108,9 @@ function initialization(){
 
 function createLoadButton(){
 	LoadButtonLeft = createFileInput(displayImg);
-	LoadButtonLeft.position(margin+25, margin+colorWheelSize+120);
+	LoadButtonLeft.position(d.width/2+0.6*colorWheelSize, d.height-margin-colorWheelSize);
 	LoadButtonRight = createFileInput(displayImg);
-	LoadButtonRight.position(margin+25+d.width, margin+colorWheelSize+120);
+	LoadButtonRight.position(3*d.width/2+0.6*colorWheelSize, d.height-margin-colorWheelSize);
 }
 
 function displayImg(file){
@@ -153,10 +123,10 @@ function displayImg(file){
 }
 
 function paintDrawingAreas() {
-	let rect_margin_x = 4 * margin + colorWheelSize + 10;
+	let rect_margin_x = 0;
 	let rect_width_x = window.innerWidth / 2 - rect_margin_x;
-	let rect_margin_y = 40;
-	let rect_height_y = window.innerHeight * 0.70;
+	let rect_margin_y = 0;
+	let rect_height_y = window.innerHeight * 0.75;
 	let c = color(bg_left);
 	fill(c);
 	noStroke();
