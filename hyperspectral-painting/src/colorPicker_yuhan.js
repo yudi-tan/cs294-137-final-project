@@ -148,6 +148,11 @@ function createLoadButton(){
 function displayImg(file){
   if (file.type === 'image') {
 	imgL = loadImage(file.data)
+	payload = {
+		type: "set_background_picture",
+		payload: file
+	}
+	socket.send(JSON.stringify(payload));
   } else {
     imgL = null;
 	imgR = null;

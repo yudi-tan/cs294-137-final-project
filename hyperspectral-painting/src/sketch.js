@@ -294,6 +294,9 @@ function handleMessage(msg) {
       // repaint all items in buffer, since the background color change overwrites the previously drawn items
       repaintBufferItems();
       break;
+    case "set_background_picture":
+      displayImg(obj.payload);
+      break;
     // add more cases here for other synchronization needs
     // case "canvas_resize":
     //   console.log('got resize');
