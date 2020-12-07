@@ -8,6 +8,7 @@ var backgroundColorPicker;
 var brushColorLeft=[170,0,0,255], brushColorRight=[170,0,0,255]
 var labelColorLeft=[170,0,0,255], labelColorRight=[170,0,0,255]
 
+var paintStrokeBuffer = [];
 
 // global variables tracking the color values.
 let ir = 246, ig = 255, igp = 0, ib = 68;
@@ -20,6 +21,16 @@ let d = {};
 
 //color picker related
 var colorWheelSize = 200, margin = 30
+
+// for keming's color pickers
+var paintHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
+var paintRColors = [[5, 100, 200], [25, 25, 25], [5, 100, 200], [5, 100, 200]]
+
+var backgroundHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
+var backgroundRColors = [[5, 100, 200], [25, 25, 25]]
+
+var curr_offset;
+
 
 /************************
  *                      *
@@ -50,41 +61,50 @@ function setup() {
 
   // Initialize the canvas to the size of the screen.
   createCanvas(window.innerWidth, window.innerHeight);
-  fillD();
+  fillD(width/2);
   background(bg); // change the background color using a color picker.
   stroke(255)
   line(d.width,0,d.width,d.height)
   // set up yuhan's color picker
-  initialization()
+  initialization();
   createResetButton()
   createLoadButton()
-  // set up keming's color pickers
-  let paintHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
-  let paintRColors = [[5, 100, 200], [25, 25, 25], [5, 100, 200], [5, 100, 200]]
   
-  let backgroundHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
-  let backgroundRColors = [[5, 100, 200], [25, 25, 25]]
-  let starting_offset = width/2
-
-  paintColorPicker = new ColorPickerKeming(width, height, starting_offset, paintHColors, paintRColors, "Paint", "lowerleft", d);
-  backgroundColorPicker = new ColorPickerKeming(width, height, starting_offset, backgroundHColors, backgroundRColors, "Background", "lowerright", d);
 
   paintDrawingAreas();
   
+  // specify the offset
+  curr_offset = width/2;
+  
+  slider = createSlider(0, curr_offset+300, curr_offset);
+  slider.position(10, 10);
+  slider.style('width', '80px');
+
 }
 
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
-  ColorPicker(colorWheel, colorWheelSize, bg, margin, d, socket, mouseIsPressed, mouseX, mouseY, pmouseX, pmouseY)
+  // to_change_offset = slider.value();
+  // if (to_change_offset !== curr_offset) {
+  //   clear();
+  //   curr_offset = to_change_offset;
+  // }
+  // fillD(to_change_offset);
+
   
 
-  paintColorPicker.display();
-  backgroundColorPicker.display();
+  ColorPicker(colorWheel, colorWheelSize, bg, margin, d, socket, mouseIsPressed, mouseX, mouseY, pmouseX, pmouseY)
+  paintColorPicker = new ColorPickerKeming(width, height, curr_offset, paintHColors, paintRColors, "Paint", "lowerleft");
+  backgroundColorPicker = new ColorPickerKeming(width, height, curr_offset, backgroundHColors, backgroundRColors, "Background", "lowerright");
+
+  paintColorPicker.display(d);
+  backgroundColorPicker.display(d);
 }
 
 function mousePressed() {
   pc = paintColorPicker.retColorClicked();
   bc = backgroundColorPicker.retColorClicked();
+  console.log(pc, bc);
   if (pc) {
     brushColorLeft = pc[0];
     labelColorLeft = pc[0];
@@ -119,6 +139,17 @@ function mousePressed() {
   }
 }
 
+
+// function windowResized() {
+//   resizeCanvas(window.innerWidth, window.innerHeight);
+//   //update the new offset
+//   curr_offset = width/2;
+  
+//   // send a message to the web socket indicating that we are resetting the canvas and to redraw components on other clients
+//   // socket.send(JSON.stringify({type:"canvas_resize"}));
+  
+// }
+
 /************************
  *                      *
  *    custom handlers   *
@@ -129,7 +160,7 @@ function mousePressed() {
 
 // Core function which overwrites and extends default p5.js functions such as
 // fill, stroke, etc.
-function fillD() {
+function fillD(offset) {
   // overwrite fill and stroke functions with d.fill and d.stroke such that they take in
   // RGG'B  and render rgb on left eye and rg'b on right eye.
   ["fill", "stroke"].forEach(fn => {
@@ -175,14 +206,36 @@ function fillD() {
         noStroke();
       }
       
-      let newargs = Array.from(arguments).map((v, i) => ((2 ** i) & idxs) > 0 ? v + width/2 : v);
+      let newargs = Array.from(arguments).map((v, i) => ((2 ** i) & idxs) > 0 ? v + offset : v);
       OG_f.apply(window, newargs);
     }
   });
 
-  d.width = width/2;
+  d.width = offset;
   d.height = height;
 }
+
+// FOR USE IN REPAINTING THE STROKE ITEMS AFTER adjusting the background, resizing the canvas, or changing the offset
+function repaintBufferItems() {
+  for (let i = 0; i < paintStrokeBuffer.length; i++) {
+    let action = paintStrokeBuffer[i].type;
+    let pl = paintStrokeBuffer[i].payload;
+    switch(action) {
+      case "draw_stroke":
+        paintbrushStroke(pl[0],pl[1],pl[2],pl[3],pl[4],pl[5]);
+        break;
+      case "brush_color_change_left":
+        brushColorLeft = pl;
+        labelColorLeft = pl;
+        break;
+      case "brush_color_change_right":
+        brushColorRight = pl;
+        labelColorRight = pl;
+        break;
+    }
+  }
+}
+
 
 
 
@@ -199,25 +252,45 @@ function handleMessage(msg) {
   switch (obj.type) {
     case "draw_stroke":
       pl = obj.payload
+      paintStrokeBuffer.push({type: 'draw_stroke', payload: pl});
       paintbrushStroke(pl[0],pl[1],pl[2],pl[3],pl[4],pl[5]);
       break;
     case "reset_canvas":
       initialization();
+      paintStrokeBuffer = [];
       break;
     case "brush_color_change_left":
       brushColorLeft = obj.payload;
       labelColorLeft = obj.payload;
+      paintStrokeBuffer.push({type:'brush_color_change_left', payload: obj.payload})
       break;
     case "brush_color_change_right":
       brushColorRight = obj.payload;
       labelColorRight = obj.payload;
+      paintStrokeBuffer.push({type:'brush_color_change_right', payload: obj.payload})
       break;
     case "background_color_change":
       bg_left = obj.payload[0];
       bg_right = obj.payload[1];
       initialization();
+      // repaint all items in buffer, since the background color change overwrites the previously drawn items
+      repaintBufferItems();
       break;
     // add more cases here for other synchronization needs
+    // case "canvas_resize":
+    //   console.log('got resize');
+    //   // reset the D functions; this will cause the color picker elems to automatically redraw too
+    //   fillD();
+    //   // redraw UI elements like the drawing area, etc, which will use the new screenwidth and such
+    //   initialization();
+    //   // redraw the strokes drawn, with the new d width
+    //   repaintBufferItems();
+      
+    //   break;
+    // case "change_offset":
+      
+    //   break;
+      
     default:
       return
   }
