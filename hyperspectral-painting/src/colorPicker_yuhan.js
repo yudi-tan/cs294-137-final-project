@@ -171,7 +171,6 @@ function paintDrawingAreas() {
 }
 
 function computeimgR(imgL){
-	console.log(imgL.width)
 	var imgR = createImage(imgL.width, imgL.height);
 	imgR.loadPixels();
 	for (let i = 0; i < imgR.width; i++) {
@@ -179,7 +178,6 @@ function computeimgR(imgL){
 			// get the pixel value for imgL
 			c=imgL.get(i,j)
 			gp=rgb2rgpb(c[0],c[1],c[2]);
-			console.log(gp)
 			imgR.set(i, j, color(c[0], gp, c[2]));
 		}
 	}
@@ -199,36 +197,41 @@ function rgb2rgpb(r,g,b){
 
 
 function rgbToHsv(r, g, b) {
-  // r /= 255, g /= 255, b /= 255;
+	let rabs, gabs, babs, rr, gg, bb, h, s, v, diff, diffc, percentRoundFn;
+    rabs = r / 255;
+    gabs = g / 255;
+    babs = b / 255;
+    v = Math.max(rabs, gabs, babs),
+    diff = v - Math.min(rabs, gabs, babs);
+    diffc = c => (v - c) / 6 / diff + 1 / 2;
+    percentRoundFn = num => Math.round(num * 100) / 100;
+    if (diff == 0) {
+        h = s = 0;
+    } else {
+        s = diff / v;
+        rr = diffc(rabs);
+        gg = diffc(gabs);
+        bb = diffc(babs);
 
-  var max = Math.max(r, g, b),
-    min = Math.min(r, g, b);
-  var h, s, v = max;
+        if (rabs === v) {
+            h = bb - gg;
+        } else if (gabs === v) {
+            h = (1 / 3) + rr - bb;
+        } else if (babs === v) {
+            h = (2 / 3) + gg - rr;
+        }
+        if (h < 0) {
+            h += 1;
+        }else if (h > 1) {
+            h -= 1;
+        }
+	}
 
-  var d = max - min;
-  s = max == 0 ? 0 : d / max;
-
-  if (max == min) {
-    h = 0; // achromatic
-  } else {
-    switch (max) {
-      case r:
-        h = (g - b) / d + (g < b ? 6 : 0);
-        break;
-      case g:
-        h = (b - r) / d + 2;
-        break;
-      case b:
-        h = (r - g) / d + 4;
-        break;
-    }
-
-    h /= 6;
-  }
-
-  return [h * 60, s, v];
+	// convert to radians
+	return [Math.round(h * 360), percentRoundFn(s * 100), percentRoundFn(v * 100)].map(v => v * (Math.PI / 180));
 }
 
+// this code expects 0 <= h,s,v <= 1 so convert the degrees to radians first.
 function HSVtoRGGB(h, s, v) {
     var r, g, gp, b, i, f, p, q, t;
     i = Math.floor(h * 8);

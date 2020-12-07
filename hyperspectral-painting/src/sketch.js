@@ -23,11 +23,11 @@ let d = {};
 var colorWheelSize = 200, margin = 30, colorWheel;
 
 // for keming's color pickers
-var paintHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
-var paintRColors = [[5, 100, 200], [25, 25, 25], [5, 100, 200], [5, 100, 200]]
+var paintHColors = [[[167, 88, 65], [120, 40, 9]], [[235, 181, 156], [202, 113, 76]], [[52, 88, 111], [45, 128, 156]], [[138, 169, 131], [110, 169, 126]]]
+var paintRColors = [[179, 200, 90], [94, 62, 239], [219, 196, 11], [164, 28, 159]]
 
-var backgroundHColors = [[[5, 100, 200], [10, 90, 180]], [[25, 25, 25], [40, 40, 40]]]
-var backgroundRColors = [[5, 100, 200], [25, 25, 25]]
+var backgroundHColors = [[[167, 88, 65], [120, 40, 9]], [[235, 181, 156], [202, 113, 76]], [[52, 88, 111], [45, 128, 156]], [[138, 169, 131], [110, 169, 126]]]
+var backgroundRColors = [[179, 200, 90], [94, 62, 239], [219, 196, 11], [164, 28, 159]]
 
 var curr_offset;
 var next_offset;
@@ -123,7 +123,6 @@ function draw() {
 function mousePressed() {
   pc = paintColorPicker.retColorClicked();
   bc = backgroundColorPicker.retColorClicked();
-  console.log(pc, bc);
   if (pc) {
     brushColorLeft = pc[0];
     labelColorLeft = pc[0];

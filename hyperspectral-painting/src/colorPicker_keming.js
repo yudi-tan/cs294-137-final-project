@@ -154,7 +154,7 @@ class ColorPickerKeming {
             let distOffset = dist(mouseX, mouseY, colorToCheck.x + this.offset, colorToCheck.y);
             // if distance from the colorCircle centroid is within a certain radius:
             if ((distPrimary < this.width/8) || (distOffset < this.width/8)) {
-                return this.rColors[i];
+                return [this.rColors[i], this.rColors[i]];
                 // returns a 1d [r, g, b]
             }
         }
