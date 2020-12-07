@@ -62,7 +62,6 @@ function setup() {
   textSize(20)
   d.noStroke()
   d.fill(255,255,255,255,255,255)
-  d.text("using arrow keys to control left/right and brush size, DEL:erase",colorWheelSize+4*margin,margin-5)
   createResetButton()
   createLoadButton()
   // set up keming's color pickers
@@ -93,12 +92,6 @@ function draw() {
 
   paintColorPicker.display();
   backgroundColorPicker.display();
-}
-
-function windowResized() {
-  resizeCanvas(window.innerWidth, window.innerHeight);
-  paintColorPicker.update(width, height);
-  backgroundColorPicker.update(width, height);
 }
 
 function mousePressed() {
