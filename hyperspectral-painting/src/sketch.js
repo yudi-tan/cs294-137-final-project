@@ -62,17 +62,11 @@ function setup() {
   // Initialize the canvas to the size of the screen.
   createCanvas(window.innerWidth, window.innerHeight);
   fillD(width/2);
-  initialization()
   background(bg); // change the background color using a color picker.
   stroke(255)
   line(d.width,0,d.width,d.height)
   // set up yuhan's color picker
-  colorWheel.resize(colorWheelSize,colorWheelSize)
-  image(colorWheel, margin, margin,colorWheelSize,colorWheelSize)
-  image(colorWheel, d.width+margin, margin,colorWheelSize,colorWheelSize)
-  textSize(20)
-  d.noStroke()
-  d.fill(255,255,255,255,255,255)
+  initialization();
   createResetButton()
   createLoadButton()
   
