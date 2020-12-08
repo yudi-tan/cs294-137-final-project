@@ -22,6 +22,7 @@ function ColorPicker(colorWheel_temp, colorWheelSize_temp, bg_temp, margin_temp,
 				brushColorRight = colorWheel.get(xPos-d.width/2+colorWheelSize/2,yPos-d.height+colorWheelSize+margin)
 		}
 		if (yPos<rect_height_y-brushSize/2){
+			paintStrokeBuffer.push({type:'draw_stroke', payload:[mx, my, pmx, pmy, brushColorLeft, brushColorRight]});
 			paintbrushStroke(mx,my,pmx,pmy,brushColorLeft,brushColorRight)
 		}	
 		// as user draws a stroke, we also send those data over socket so other
@@ -59,7 +60,9 @@ function paintbrushStroke(mx, my, px, py,brushColorLeft,brushColorRight) {
     d.stroke(brushColorLeft[0],brushColorLeft[1],brushColorLeft[2],brushColorRight[0],brushColorRight[1],brushColorRight[2]);
     strokeWeight(brushSize);
 	if((px-d.width)*(mx-d.width)<=0) {pop();return}
-    d.line(mx%Math.round(d.width), my, px%Math.round(d.width), py);
+	d.line(mx%Math.round(d.width), my, px%Math.round(d.width), py);
+	
+	
 	pop()
 }
 

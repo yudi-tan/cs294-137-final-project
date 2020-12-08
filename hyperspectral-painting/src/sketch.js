@@ -60,6 +60,8 @@ function setup() {
     handleMessage(message.data);
   })  
 
+
+
   // Initialize the canvas to the size of the screen.
   createCanvas(window.innerWidth, window.innerHeight);
   fillD(width/2);
@@ -147,6 +149,10 @@ function mousePressed() {
     bg_left = bc[0];
     bg_right = bc[1];
     initialization();
+    // after reinitializing, need to repaint the items that have already been painted
+    console.log('client-side redo')
+    repaintBufferItems();
+
     // as user changes bg color, we need to synchronize this change to other
     // clients too.
 		payload = {
@@ -154,6 +160,11 @@ function mousePressed() {
 			payload: bc,
 		}
     socket.send(JSON.stringify(payload));
+
+
+    // when user changes bg color, need to redraw the recorded paintbrushstrokes. 
+
+
   }
 }
 
@@ -166,7 +177,13 @@ function windowResized() {
   
   // send a message to the web socket indicating that we are resetting the canvas and to redraw components on other clients
   // this part is dubious whether it works...
-  // socket.send(JSON.stringify({type:"canvas_resize"}));
+  let rendering_info = {
+    canvas_width:width,
+    canvas_height:height,
+    offset:next_offset,
+  }
+
+  socket.send(JSON.stringify({type:"canvas_resize", payload:rendering_info}));
   
 }
 
@@ -237,22 +254,12 @@ function fillD(offset) {
 
 // FOR USE IN REPAINTING THE STROKE ITEMS AFTER adjusting the background, resizing the canvas, or changing the offset
 function repaintBufferItems() {
+  console.log(paintStrokeBuffer.length);
   for (let i = 0; i < paintStrokeBuffer.length; i++) {
     let action = paintStrokeBuffer[i].type;
     let pl = paintStrokeBuffer[i].payload;
-    switch(action) {
-      case "draw_stroke":
-        paintbrushStroke(pl[0],pl[1],pl[2],pl[3],pl[4],pl[5]);
-        break;
-      case "brush_color_change_left":
-        brushColorLeft = pl;
-        labelColorLeft = pl;
-        break;
-      case "brush_color_change_right":
-        brushColorRight = pl;
-        labelColorRight = pl;
-        break;
-    }
+    paintbrushStroke(pl[0],pl[1],pl[2],pl[3],pl[4],pl[5]);
+    
   }
 }
 
@@ -272,6 +279,7 @@ function handleMessage(msg) {
       pl = obj.payload
       paintStrokeBuffer.push({type: 'draw_stroke', payload: pl});
       paintbrushStroke(pl[0],pl[1],pl[2],pl[3],pl[4],pl[5]);
+      console.log('added stroke');
       break;
     case "reset_canvas":
       initialization();
@@ -280,16 +288,15 @@ function handleMessage(msg) {
     case "brush_color_change_left":
       brushColorLeft = obj.payload;
       labelColorLeft = obj.payload;
-      paintStrokeBuffer.push({type:'brush_color_change_left', payload: obj.payload})
       break;
     case "brush_color_change_right":
       brushColorRight = obj.payload;
       labelColorRight = obj.payload;
-      paintStrokeBuffer.push({type:'brush_color_change_right', payload: obj.payload})
       break;
     case "background_color_change":
       bg_left = obj.payload[0];
       bg_right = obj.payload[1];
+      console.log('bgchange')
       initialization();
       // repaint all items in buffer, since the background color change overwrites the previously drawn items
       repaintBufferItems();
@@ -298,14 +305,15 @@ function handleMessage(msg) {
       displayImg(obj.payload);
       break;
     // add more cases here for other synchronization needs
-    // case "canvas_resize":
-    //   console.log('got resize');
-    //   // reset the D functions; this will cause the color picker elems to automatically redraw too
-    //   fillD();
-    //   // redraw UI elements like the drawing area, etc, which will use the new screenwidth and such
-    //   initialization();
-    //   // redraw the strokes drawn, with the new d width
-    //   repaintBufferItems();
+    case "canvas_resize":
+      console.log('got resize');
+      // reset the D functions; this will cause the color picker elems to automatically redraw too
+      fillD();
+      // redraw UI elements like the drawing area, etc, which will use the new screenwidth and such
+      initialization();
+      // redraw the strokes drawn, with the new d width
+      console.log('asdfchange')
+      repaintBufferItems();
       
     //   break;
     // case "change_offset":
