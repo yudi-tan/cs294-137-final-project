@@ -31,6 +31,8 @@ var backgroundRColors = [[179, 200, 90], [94, 62, 239], [219, 196, 11], [164, 28
 
 var curr_offset;
 var next_offset;
+var curr_height;
+var next_height;
 
 
 /************************
@@ -76,8 +78,9 @@ function setup() {
 
   paintDrawingAreas();
   
-  // specify the offset
+  // specify the offset, height
   curr_offset = width/2;
+  curr_height = height;
   
 
 
@@ -86,7 +89,7 @@ function setup() {
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
 
-  if (next_offset !== curr_offset) {
+  if (next_offset !== curr_offset || next_height !== curr_height) {
     // this is called when the window size changes, which then changes the offset.
 
     // need to remove old elements like the buttons, lines, background area, etc.
@@ -112,6 +115,7 @@ function draw() {
     createLoadButton();
     
     curr_offset = next_offset;
+    curr_height = next_height;
   }
   
   ColorPicker(colorWheel, colorWheelSize, bg, margin, d, socket, mouseIsPressed, mouseX, mouseY, pmouseX, pmouseY)
@@ -174,6 +178,7 @@ function windowResized() {
   resizeCanvas(window.innerWidth, window.innerHeight);
   // update the new offset; the draw() function uses the curr_offset to update the D function and redo drawings automatically
   next_offset = width/2;
+  next_height = height;
   
   // send a message to the web socket indicating that we are resetting the canvas and to redraw components on other clients
   // this part is dubious whether it works...
