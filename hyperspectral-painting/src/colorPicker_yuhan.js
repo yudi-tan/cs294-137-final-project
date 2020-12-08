@@ -97,6 +97,7 @@ function createResetButton(){
 	resetButtonRight.position(3*d.width/2-colorWheelSize, d.height-margin-colorWheelSize);
 	mousePressedCallback = () => {
 		initialization();
+		paintStrokeBuffer = [];
 		// as user resets canvas on one client, we synchronize the other clients
 		// too
 		payload = {
