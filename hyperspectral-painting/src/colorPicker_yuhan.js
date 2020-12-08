@@ -186,85 +186,15 @@ function computeimgR(imgL){
 		for (let j = 0; j < imgR.height; j++) {
 			// get the pixel value for imgL
 			c=imgL.get(i,j)
-			gp=rgb2rgpb(c[0],c[1],c[2]);
-			imgR.set(i, j, color(c[0], gp, c[2]));
+			imgR.set(i, j, color(c[0], c[1]+20, c[2]));
 		}
 	}
 	imgR.updatePixels();
 	return imgR
 }
 
-function rgb2rgpb(r,g,b){
-      let hsVals = rgbToHsv(r, g, b);
-
-      let h = hsVals[0];
-      let s = hsVals[1];
-      let v = hsVals[2];
-	  [r,g,gp,b]=HSVtoRGGB(h, s, v);
-	  return gp
-}
 
 
-function rgbToHsv(r, g, b) {
-	let rabs, gabs, babs, rr, gg, bb, h, s, v, diff, diffc, percentRoundFn;
-    rabs = r / 255;
-    gabs = g / 255;
-    babs = b / 255;
-    v = Math.max(rabs, gabs, babs),
-    diff = v - Math.min(rabs, gabs, babs);
-    diffc = c => (v - c) / 6 / diff + 1 / 2;
-    percentRoundFn = num => Math.round(num * 100) / 100;
-    if (diff == 0) {
-        h = s = 0;
-    } else {
-        s = diff / v;
-        rr = diffc(rabs);
-        gg = diffc(gabs);
-        bb = diffc(babs);
-
-        if (rabs === v) {
-            h = bb - gg;
-        } else if (gabs === v) {
-            h = (1 / 3) + rr - bb;
-        } else if (babs === v) {
-            h = (2 / 3) + gg - rr;
-        }
-        if (h < 0) {
-            h += 1;
-        }else if (h > 1) {
-            h -= 1;
-        }
-	}
-
-	// convert to radians
-	return [Math.round(h * 360), percentRoundFn(s * 100), percentRoundFn(v * 100)].map(v => v * (Math.PI / 180));
-}
-
-// this code expects 0 <= h,s,v <= 1 so convert the degrees to radians first.
-function HSVtoRGGB(h, s, v) {
-    var r, g, gp, b, i, f, p, q, t;
-    i = Math.floor(h * 8);
-    f = h * 8 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 8) {
-      case 0: r = v, g = t, gp = p, b = p; break;
-      case 1: r = q, g = v, gp = p, b = p; break;
-      case 2: r = p, g = v, gp = t, b = p; break;
-      case 3: r = p, g = q, gp = v, b = p; break;
-      case 4: r = p, g = p, gp = v, b = t; break;
-      case 5: r = p, g = p, gp = q, b = v; break;
-      case 6: r = t, g = p, gp = p, b = v; break;
-      case 7: r = v, g = p, gp = p, b = q; break;
-    }
-    return [
-      Math.round(r * 255),
-      Math.round(g * 255),
-      Math.round(gp * 255),
-      Math.round(b * 255)
-    ];
-}
 
 function deleteButtons() {
 	console.log('calling this');
