@@ -126,7 +126,7 @@ wsServer.on('request', request => {
     
     // store the command in the command buffer so that new clients can replay
     // all existing commands. 
-    command_buffer.push(messageString);
+    // command_buffer.push(messageString);
     
     // forward the message to other websocket clients
     if (allConnections.size > 1) {
