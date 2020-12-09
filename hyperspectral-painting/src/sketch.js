@@ -1,7 +1,7 @@
 // global variable (initialized in setup) which tracks websocket connection to
 // server. used to broadcast / receive events to and from server.
 var socket;
-
+var redraw = false;
 // global variables to store the color picker and offset states
 var paintColorPicker;
 var backgroundColorPicker;
@@ -66,30 +66,29 @@ function setup() {
 
   // Initialize the canvas to the size of the screen.
   createCanvas(window.innerWidth, window.innerHeight);
+  
+  
+  // initialize paint areas and some UI components
   fillD(width/2);
-  background(bg); // change the background color using a color picker.
-  stroke(255)
-  line(d.width,0,d.width,d.height)
-  // set up yuhan's color picker
+  colorWheelSize = width/10;
   initialization();
   createResetButton()
   createLoadButton()
-  
 
-  paintDrawingAreas();
-  
   // specify the offset, height
   curr_offset = width/2;
   curr_height = height;
-  
 
+  // initialize next_offset and next_height 
+  next_offset = curr_offset;
+  next_height = curr_height;
 
 }
 
 // p5.js will then repeatedly call this function to render drawings.
 function draw() {
-
-  if (next_offset !== curr_offset || next_height !== curr_height) {
+  
+  if (next_offset !== curr_offset || next_height !== curr_height || redraw) {
     // this is called when the window size changes, which then changes the offset.
 
     // need to remove old elements like the buttons, lines, background area, etc.
@@ -98,17 +97,13 @@ function draw() {
 
     //update the drawing functions
     fillD(next_offset);
+    
 
     // redraw the relevant elements based on the new fillD function
-    paintDrawingAreas();
     stroke(255)
     line(d.width,0,d.width,d.height)
 
-    // reload static assets and redraw colorwheel, since the resolution they are read in depends on canvas size (without this, the images get blurry)
-    colorWheelSize = width/10;
-    margin = 30;
-
-    //colorWheel = loadImage("ColorWheel.png"); <- BIG ISSUE with this; need to reload, or else the repeated colorwheel.resize calls will make 
+    //colorWheel = loadImage("ColorWheel.png"); <- tiny issue with this; need to reload, or else the repeated colorwheel.resize calls will make 
     // this blurry, but the loadImage happens too slowly relative to drawing so p5 js gets confused and doesn't show the colorwheel
     reinitialization();
     createResetButton();
@@ -116,8 +111,11 @@ function draw() {
     
     curr_offset = next_offset;
     curr_height = next_height;
+
+    redraw = false;
   }
-  
+
+  colorWheelSize = width/10;
   ColorPicker(colorWheel, colorWheelSize, bg, margin, d, socket, mouseIsPressed, mouseX, mouseY, pmouseX, pmouseY)
   paintColorPicker = new ColorPickerKeming(width, height, curr_offset, paintHColors, paintRColors, "Paint", "lowerleft");
   backgroundColorPicker = new ColorPickerKeming(width, height, curr_offset, backgroundHColors, backgroundRColors, "Background", "lowerright");
@@ -287,7 +285,7 @@ function handleMessage(msg) {
       console.log('added stroke');
       break;
     case "reset_canvas":
-      initialization();
+      redraw = true;
       paintStrokeBuffer = [];
       break;
     case "brush_color_change_left":
@@ -311,19 +309,17 @@ function handleMessage(msg) {
       break;
     // add more cases here for other synchronization needs
     case "canvas_resize":
-      console.log('got resize');
-      // reset the D functions; this will cause the color picker elems to automatically redraw too
-      fillD();
-      // redraw UI elements like the drawing area, etc, which will use the new screenwidth and such
-      initialization();
-      // redraw the strokes drawn, with the new d width
-      console.log('asdfchange')
-      repaintBufferItems();
-      
-    //   break;
-    // case "change_offset":
-      
-    //   break;
+      // console.log('got resize');
+      // // reset the D functions; this will cause the color picker elems to automatically redraw too
+      // fillD(obj.payload['offset']);
+      // // set the new canvas size using obj.payload['canvas_width'] and obj.payload['canvas_height']
+      // resizeCanvas()
+      // // redraw UI elements like the drawing area, etc, which will use the new screenwidth and such
+      // redraw=true;
+      // repaintBufferItems();
+      break;
+    case "change_offset":
+      break;
       
     default:
       return

@@ -110,17 +110,19 @@ function createResetButton(){
 }
 
 function initialization(){
-	background(bg)
 	stroke(255)
 	line(d.width,0,d.width,d.height)
-	colorWheel.resize(colorWheelSize,colorWheelSize)
-    image(colorWheel, d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
-    image(colorWheel, 3*d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
-    textSize(20)
+
+	textSize(20)
     d.noStroke()
     d.fill(255,255,255,255,255,255)
 	img=null
 	paintDrawingAreas();
+	colorWheel.resize(colorWheelSize,colorWheelSize)
+    image(colorWheel, d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
+    image(colorWheel, 3*d.width/2-colorWheelSize/2, d.height-colorWheelSize-margin,colorWheelSize,colorWheelSize)
+    
+	
 }
 
 function reinitialization() {
